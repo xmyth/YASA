@@ -66,10 +66,20 @@ class testList(flowList):
         self._testlist = {}
         self._getTestList()
 
-    def genTestFileList(self, dir):
+    def genTestFileList(self, dir, valid_tests=[]):
+        testcases = []
+
+        for test in self._testlist.values():
+
+            if valid_tests:
+                if os.path.basename(test) in valid_tests:
+                    testcases.append(test)
+            else:
+                testcases.append(test)
+            
         with open(os.path.join(dir,defaultTestListFile()), 'w') as file:
             file.write('+incdir+' + self._testDir + '\n')
-            for test in self._testlist.values():
+            for test in testcases:
                 file.write('+incdir+' + test + '\n')
                 file.write('+incdir+' + os.path.join(test, '..') + '\n')
                 file.write(os.path.join(test, os.path.basename(test) + '.sv') + '\n')
@@ -82,6 +92,23 @@ class testList(flowList):
                 basename, extname = os.path.splitext(file)
                 if extname == '.sv' and basename == os.path.basename(dirpath):
                     self._testlist[basename] = dirpath
+    def get_testfile(self, test):
+        if test in self._testlist:
+            return os.path.join(self._testlist[test], test + '.sv')
+
+    def get_shm_tcl(self,test):
+        if test in self._testlist:
+            tcl = os.path.join(self._testlist[test], 'shm_dump.tcl')
+            if os.path.isfile(tcl):
+                return tcl
+        return None
+
+    def get_fsdb_tcl(self,test):
+        if test in self._testlist:
+            tcl = os.path.join(self._testlist[test], 'fsdb_dump.tcl')
+            if os.path.isfile(tcl):
+                return tcl
+        return None
 
 class allTestList(object):
     def __init__ (self):

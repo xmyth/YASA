@@ -19,6 +19,8 @@
 
 from buildCfg import *
 from groupCfg import *
+from globals import *
+from pathlib import Path
 
 class readCfgFileBase(baseCfg):
     def __init__(self, name, file):
@@ -55,16 +57,16 @@ class readBuildCfgFile(readCfgFileBase):
 
 
     def compileOption(self, buildName):
-            return self._toList(self.build.compileOption) + self.getBuild(buildName).compileOption  if self.build.compileOption else self.getBuild(buildName).compileOption
+        return self._toList(self.build.compileOption) + self._toList(self.getBuild(buildName).compileOption)
 
     def simOption(self, buildName):
-        return self._toList(self.build.simOption) + self.getBuild(buildName).simOption if self.build.simOption else self.getBuild(buildName).simOption
+        return self._toList(self.build.simOption) + self._toList(self.getBuild(buildName).simOption)
 
     def preCompileOption(self, buildName):
-        return self._toList(self.build.preCompileOption) + self._toList(self.getBuild(buildName).preCompileOption) 
+        return self._toList(self.build.preCompileOption) + self._toList(self.getBuild(buildName).preCompileOption)
 
     def preSimOption(self, buildName):
-        return self._toList(self.build.preSimOption) + self._toList(self.getBuild(buildName).preSimOption) 
+        return self._toList(self.build.preSimOption) + self._toList(self.getBuild(buildName).preSimOption)
 
     def postCompileOption(self, buildName):
         return self._toList(self.build.postCompileOption) + self._toList(self.getBuild(buildName).postCompileOption)
@@ -100,10 +102,33 @@ class readGroupCfgFile(readCfgFileBase):
     def allBuild(self):
         return list(set(self._allBuild))
 
+    def get_testcases_by_folder(self, folder):        
+        p = Path(defaultTestDir())
+        folder = folder.strip()
+
+        pattern = '*.sv'
+
+        if folder.endswith('.sv'):
+           pattern = folder
+        elif folder:    
+            pattern = folder + '/**/*.sv'
+        
+        testcases = []
+        for testcase in p.rglob(pattern):
+            if testcase.parent.stem == testcase.stem:
+                testcases.append(testcase.stem)
+
+        if testcases:
+            if 'folder_' in self._tests:
+                self._tests['folder_'].extend(testcases)
+            else:
+                self._tests['folder_'] = testcases
+
     def getTests(self, groupName):
         groupSection = self.testGroup.getGroup(groupName)
         globalBuild = groupSection.buildOption
         globalTests = groupSection.testsOption
+        globalFolders = groupSection.foldersOption
         if globalBuild:
             self._validBuild.append(globalBuild)
             self._allBuild.append(globalBuild)
@@ -113,8 +138,11 @@ class readGroupCfgFile(readCfgFileBase):
             for incGroup in groupSection.incGroups:
                 if incGroup.testsOption:
                     self._tests[incGroup.name] = incGroup.testsOption
-                self.setValidBuild(globalBuild, incGroup.buildOption)
-                self._allBuild.append(incGroup.buildOption)
+                if incGroup.buildOption:
+                    self.setValidBuild(globalBuild, incGroup.buildOption)
+                    self._allBuild.append(incGroup.buildOption)
+        for folder in globalFolders:
+            testcases = self.get_testcases_by_folder(folder)
 
         self.checkBuild(self._validBuild, groupName)
         return self._tests

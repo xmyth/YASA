@@ -31,9 +31,12 @@ class waveArgsAction(argparse.Action):
             appendAttr(args, 'compileOption', '-kdb -debug_access+pp +define+DUMP_VPD')
         elif args.wave == 'fsdb':
             appendAttr(args, 'compileOption', '-kdb -debug_access+pp +define+DUMP_FSDB')
+            appendAttr(args, 'simOption', '+fsdb+autoflush')
         elif args.wave == 'gui':
             appendAttr(args, 'compileOption', '-kdb -debug_access+all +define+DUMP_FSDB')
             appendAttr(args, 'simOption', '-verdi')
+        else :  #add by yangjunti 2021.10.29 to keep vcs regression and sing_run (fsdb)  with the same compile option ;  
+            appendAttr(args, 'compileOption', '-kdb -debug_access+pp ')
 
 class covArgsAction(argparse.Action):
     """
@@ -71,6 +74,13 @@ class testArgsAction(argparse.Action):
         if args.test:
             appendAttr(args, 'simOption', '+UVM_TESTNAME=%s' % args.test)
 
+class dpArgsAction(argparse.Action):
+    def __call__(self, parser, args, values, option = None):
+        args.dp = values
+        if args.dp:
+            for i in args.dp.split(','):
+                appendAttr(args, 'simOption', '+uvm_set_verbosity=uvm_test_top*,' + i + ',UVM_DEBUG,time,0')
+
 class vcsInterface(simulatorInterface): 
     """
     Interface for the Synopsys VCS MX simulator
@@ -91,9 +101,10 @@ class vcsInterface(simulatorInterface):
                             help='dump waveform(vpd or fsdb), default fsdb')
         parser.add_argument('-cov', nargs='?', const='all', dest='cov', action=covArgsAction,
                             help='collect code coverage, default all kinds collect(line+cond+fsm+tgl+branch+assert')
-
         parser.add_argument('-seed', type=positive_int, dest='seed', default=0, action=seedArgsAction,
                             help='set testcase ntb random seed')
+        parser.add_argument('-dp', nargs='?', dest='dp', default='', action=dpArgsAction,
+                            help='set IDs with UVM_DEBUG')
 
     @classmethod
     def find_prefix_from_path(cls):

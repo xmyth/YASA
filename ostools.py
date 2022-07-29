@@ -26,9 +26,9 @@ from __future__ import print_function
 import time
 import subprocess
 import threading
-import psutil
 import shutil
 import sys
+import collections
 import signal
 try:
     # Python 3.x
@@ -209,12 +209,44 @@ class Process(object):
         """
         Terminate the process
         """
+        
+        def get_pids(cur_pid):
+            start_times = {}
+            reverse_ppid_map = collections.defaultdict(list)
+            pids = [int(x) for x in os.listdir('/proc') if x.isdigit()]
+            for pid in pids:
+                try:
+                    with open('/proc/%s/stat' % pid, 'rb') as f:
+                        data = f.read()
+                except (FileNotFoundError, ProcessLookupError):
+                    pass
+                else:
+                    rpar = data.rfind(b')')
+                    dset = data[rpar + 2:].split()
+                    ppid = int(dset[1])
+                    reverse_ppid_map[ppid].append(pid)
+                    start_times[pid] = dset[19]
+            children = []
+            seen = set()
+            stack = [cur_pid]
+            while stack:
+                pid = stack.pop()
+                if pid in seen:
+                    continue
+                else:
+                    seen.add(pid)
+                    for child_pid in reverse_ppid_map[pid]:
+                        intime = start_times[cur_pid] <= start_times[child_pid]
+                        if intime:
+                            children.append(child_pid)
+                            stack.append(child_pid)
+            return children
+
         if self._process.poll() is None:
-            process = psutil.Process(self._process.pid)
-            proc_list = process.children(recursive=True)
+            proc_list = get_pids(self._process.pid)
             proc_list.reverse()
             for proc in proc_list:
-                proc.kill()
+                os.kill(proc, signal.SIGKILL)
             #process.kill()
 
         # Let's be tidy and join the threads we've started.

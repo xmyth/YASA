@@ -4,6 +4,8 @@ class simCheck(object):
     uvmWarningPattern = r'^.*UVM_WARNING .*\@.*:'
     uvmReportPattern = r'^--- UVM Report Summary ---'
     errorTaskPattern = r'^Error.+:'
+    VIRL_MEM_ERRPattern = r'^<<VIRL_MEM_ERR:'
+    MEM_ErrorPattern = r'^\*\*\s+MEM_Error:'
 
     def __init__(self):
         super(simCheck, self).__init__()
@@ -11,6 +13,8 @@ class simCheck(object):
         self._excludeErrPatterns = []
         self.setErrPatterns(simCheck.uvmErrorPattern)
         self.setErrPatterns(simCheck.errorTaskPattern)
+        self.setErrPatterns(simCheck.VIRL_MEM_ERRPattern)
+        self.setErrPatterns(simCheck.MEM_ErrorPattern)
         self._warnPatterns = []
         self._excludeWarnPatterns = []
         self.setWarnPatterns(simCheck.uvmWarningPattern)

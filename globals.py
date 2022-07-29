@@ -4,13 +4,13 @@ import sys
 from color_printer import COLOR_PRINTER
 
 def checkEnv():
-    if not 'PRJ_HOME' in os.environ:
-        raise EnvironmentError('$PRJ_HOME is not defined')
+    if not 'VER_MODULE_DIR' in os.environ:
+        raise EnvironmentError('$VER_MODULE_DIR is not defined')
 
 checkEnv()
 
 def defaultCliCfgFile():
-    cliFile = os.path.join(os.environ['PRJ_HOME'], 'bin', 'userCli.cfg')
+    cliFile = os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'userCli.cfg')
     if os.path.exists(cliFile):
         return cliFile
     else:
@@ -18,7 +18,10 @@ def defaultCliCfgFile():
         sys.exit(1)
 
 def defaultBuildFile():
-    buildFile = os.path.join(os.environ['PRJ_HOME'], 'bin', 'build.cfg')
+    buildFile = os.path.os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'build_' + os.environ['YASA_SIMULATOR'] + '.cfg')
+    if os.path.exists(buildFile):
+        return buildFile
+    buildFile = os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'build.cfg')
     if os.path.exists(buildFile):
         return buildFile
     else:
@@ -26,7 +29,7 @@ def defaultBuildFile():
         sys.exit(1)
 
 def defaultGroupFile():
-    groupFile = os.path.join(os.environ['PRJ_HOME'], 'bin', 'group.cfg')
+    groupFile = os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'group.cfg')
     if os.path.exists(groupFile):
         return groupFile 
     else:
@@ -43,17 +46,17 @@ def defaultYasaDir():
     if 'YASA_HOME' in os.environ:
         return os.environ['YASA_HOME']
     else :
-        return os.path.join(os.environ['PRJ_HOME'], 'bin', 'Yasa')
+        return os.path.join(os.environ['VER_MODULE_DIR'], 'bin', 'Yasa')
 
 def defautlVplanDir():
-    return os.path.join(os.environ['PRJ_HOME'], 'etc', 'vplan')
+    return os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'vplan')
 
 
 def defaultTestDir():
     if 'TEST_DIR' in os.environ:
         return os.environ['TEST_DIR']
     else:
-        return os.path.join(os.environ['PRJ_HOME'], 'testcases')
+        return os.path.join(os.environ['VER_MODULE_DIR'], 'testcases')
 
 
 def defaultWorkDir():
@@ -70,17 +73,24 @@ def defaultReportDir():
         return os.path.join(defaultWorkPrjDir(), 'report')
 
 def userSimCheck():
-    userSimCheckFile = os.path.join(os.environ['PRJ_HOME'], 'bin', 'userSimCheck.py')
+    userSimCheckFile = os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'userSimCheck.py')
     if os.path.isfile(userSimCheckFile):
         return ('userSimCheck', userSimCheckFile)
     return (None, None)
 
 
 def defaultWorkDir():
-    # if os.environ['USER'] in grp.getgrnam('sg-ic-ipdv').gr_mem:
-    #    return os.path.join('/ic/temp/ipdv', os.environ['USER'], os.path.basename(os.environ['PRJ_HOME']))
-    # elif os.environ['USER'] in grp.getgrnam('sg-ic-soc').gr_mem:
-    #    return os.path.join('/ic/temp/fe', os.environ['USER'], os.path.basename(os.environ['PRJ_HOME']))
-    # else : raise SystemError('You are supposed to be in sg-ic-ipdv, sg-ic-soc, sg-ic-fpga or sg-ic-socdv group, but you are not !')
+    work_dir = os.environ['VER_MODULE_DIR']
+    return work_dir.replace('/vulcan/proj/', '/vulcan/local/temp/', 1)
+    #prj_home = os.environ['VER_MODULE_DIR']
+    #return os.path.join(prj_home, os.path.basename(prj_home) + '_out')
 
-    return os.path.join(os.environ['PRJ_HOME'], os.path.basename(os.environ['PRJ_HOME']) + '_out')
+def defaultSHMDumpScriptFile():
+    return os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'shm_dump.tcl')
+
+def defaultFSDBDumpScriptFile():
+    return os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'fsdb_dump.tcl')
+
+def defaultCOVFile():
+    return os.path.join(os.environ['VER_MODULE_DIR'], 'etc', 'covfile.ccf')
+

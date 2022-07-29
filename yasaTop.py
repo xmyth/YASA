@@ -189,7 +189,7 @@ class yasaTop(object):
         or running a group of testcases(each testcase with specified option) 
         """
         simulator_if = self._create_simulator_if()
-        simulator_if.sim_timeout = self._args.sim_timeout;
+        simulator_if.sim_timeout = self._args.sim_timeout
 
         if self._args.group:
             compile = groupTestCompile(cli=self._cli, simulator_if=simulator_if)
@@ -215,8 +215,9 @@ class yasaTop(object):
         report.set_real_total_time(ostools.get_time() - start_time)
         report.print_str()
 
-        if post_run is not None:
-            post_run(results=Results(simulator_if))
+
+        if compile and self._args.group and self._args.cov:
+            simulator_if.merge_coverage(compile._groupRootDir, compile._buildDir)
 
         del simulator_if
 
@@ -278,23 +279,6 @@ class yasaTop(object):
                             no_color=self._args.no_color)
         runner.run(test_cases)
 
-class Results(object):
-    """
-    Gives access to results after running tests.
-    """
-
-    def __init__(self, simulator_if):
-        self._simulator_if = simulator_if
-
-    def merge_coverage(self, file_name, args=None):
-        """
-        Create a merged coverage report from the individual coverage files
-
-        :param file_name: The resulting coverage file name.
-        :param args: The tool arguments for the merge command. Should be a list of strings.
-        """
-
-        self._simulator_if.merge_coverage(file_name=file_name, args=args)
 
 if __name__ == '__main__':
     yasa = yasaTop(sys.argv[1:])

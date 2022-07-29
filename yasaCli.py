@@ -210,15 +210,21 @@ def _create_argument_parser(description=None, for_documentation=False):
                             nargs='?',   
                             dest ='comp_timeout',
                             action = 'store', 
-                            const=3600,  default=3600,
+                            const=28800,  default=28800,
                             help="set compile subprocess watchdog timer")
 
     argParser.add_argument('-sim_timeout', type=positive_int, 
                             nargs='?',   
                             dest ='sim_timeout',
                             action = 'store', 
-                            const=3600,  default=3600,
+                            const=172800,  default=172800,
                             help="set simulation subprocess watchdog timer")
+    argParser.add_argument('-fo', '-fixed_output', 
+                            nargs='?',
+                            dest='fo', 
+                            action="store", 
+                            const='fixed_output', default=None, 
+                            help="fixed output path only for single testcase")
 
     #argParser.add_argument("-export-json",
     #                    default=None,

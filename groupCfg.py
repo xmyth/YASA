@@ -38,6 +38,7 @@ class groupSubCfg(includableCfg):
         self._addOption('build')
         self._addOption('args')
         self._addOption('tests')
+        self._addOption('folders')
         self._tests = []
 
     @property
@@ -51,6 +52,7 @@ class groupSubCfg(includableCfg):
         super(groupSubCfg, self)._readBuildInOption()
         self._parseBuild()
         self._parseArgs()
+        self._parseFolders()
         self._parseTests()
 
     def _parseBuild(self):
@@ -58,6 +60,10 @@ class groupSubCfg(includableCfg):
 
     def _parseArgs(self):
         return  self._buildInOpts['args']
+
+    def _parseFolders(self):
+        if isinstance(self._buildInOpts['folders'], str):
+            self._buildInOpts['folders'] = [self._buildInOpts['folders']]
 
     def _parseTests(self):
         """
@@ -137,6 +143,10 @@ class groupSubCfg(includableCfg):
     def argsOptionList(self):
         if self.argsOption:
             return self.argsOption.strip().split("-")
+
+    @property
+    def foldersOption(self):
+        return self._buildInOpts['folders']
 
     @property
     def testsOption(self):

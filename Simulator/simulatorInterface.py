@@ -99,7 +99,7 @@ class simulatorInterface(object):
                 return path0
         return None
 
-    def merge_coverage(self, file_name, args):  # pylint: disable=unused-argument, no-self-use
+    def merge_coverage(self, group_root_dir, build_dir, args=None): # pylint: disable=unused-argument, no-self-use
         """
         Hook for simulator interface to creating coverage reports
         """
